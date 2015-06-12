@@ -1,0 +1,79 @@
+
+CREATE TABLE SIT1_DTLS_V 
+   (	SIT1_REPORT_ID NUMBER(38,0), 
+	SIT1_REPORT_NAME VARCHAR2(150 CHAR)
+   )
+
+
+CREATE TABLE UAT1_DTLS_V 
+   (	UAT1_REPORT_ID NUMBER(38,0), 
+	UAT1_REPORT_NAME VARCHAR2(150 CHAR)
+   )
+
+
+CREATE TABLE TRACKER_DTLS_V 
+   (	R_SEQ NUMBER(38,0), 
+	TRACKER_REPORT_ID NUMBER(38,0), 
+	TRACKER_REPORT_NAME VARCHAR2(150 CHAR)
+   )
+
+CREATE TABLE UATA_DTLS_V 
+   (	UATA_REPORT_ID number(38,0), 
+	    UATA_REPORT_NAME varchar2(150 char)
+   )
+
+create table UAT1_DTLS_V as
+select Tracker_REPORT_ID as UAT1_REPORT_ID,Tracker_REPORT_NAME as UAT1_REPORT_NAME from TRACKER_DTLS_V where 1=2;
+
+---------------------------
+
+
+SELECT REPORT_ID ,DISPLAY_REPORT_NAME ,'insert into UAT1_DTLS_V values ('''||REPORT_ID||''','''||DISPLAY_REPORT_NAME||''');'
+FROM ra_reports_b where app_id=1 and active_ind='A' order by report_id;
+
+
+select * from TRACKER_DTLS_V;
+
+select * from SIT1_DTLS_V;
+
+select * from UAT1_DTLS_V;
+
+select s.*,U.* from SIT1_DTLS_V S full outer join UAT1_DTLS_V U
+on s.sit1_report_id = u.uat1_report_id ;
+
+-- All Reports
+select t.*,S.*,U.* from SIT1_DTLS_V S full outer join UAT1_DTLS_V U
+on (S.SIT1_REPORT_ID = U.UAT1_REPORT_ID)
+full outer join TRACKER_DTLS_V T
+on (t.tracker_REPORT_ID = U.UAT1_REPORT_ID);
+
+
+-- NOT Match reports
+select VK.SIT1_REPORT_ID,VK.UAT1_REPORT_ID,VK.SIT1_REPORT_NAME,VK.UAT1_REPORT_NAME,
+case when vk.sit1_report_name <> vk.UAt1_report_name then 'SIT1-UAT1 Report Name Not Match' else 'IN-SYNC' end DIFF_SIT1_UAT1
+from (select t.*,S.*,U.* from SIT1_DTLS_V S full outer join UAT1_DTLS_V U
+on (S.SIT1_REPORT_ID = U.UAT1_REPORT_ID)
+full outer join TRACKER_DTLS_V T
+on (T.TRACKER_REPORT_ID = U.UAT1_REPORT_ID)) VK;
+
+select * from  (select VK.SIT1_REPORT_ID,VK.UAT1_REPORT_ID,VK.SIT1_REPORT_NAME,VK.UAT1_REPORT_NAME,
+case when VK.SIT1_REPORT_NAME <> VK.UAT1_REPORT_NAME 
+then 'SIT1-UAT1 Report Name Not Match' else 'IN-SYNC' end as DIFF_SIT1_UAT1
+from (select t.*,S.*,U.* from SIT1_DTLS_V S full outer join UAT1_DTLS_V U
+on (S.SIT1_REPORT_ID = U.UAT1_REPORT_ID)
+full outer join TRACKER_DTLS_V T
+on (T.TRACKER_REPORT_ID = U.UAT1_REPORT_ID)) VK)DM
+where DM.DIFF_SIT1_UAT1 <> 'IN-SYNC';
+
+
+---------------------
+
+select UATA_REPORT_ID,UATA_REPORT_NAME,substr(UATA_REPORT_NAME,length(UATA_REPORT_NAME)-4) UATA_VERSION from UATA_DTLS_V;
+
+select t.*,uata.* from (select UATA_REPORT_ID,UATA_REPORT_NAME,SUBSTR(UATA_REPORT_NAME,length(UATA_REPORT_NAME)-4) UATA_VERSION 
+from UATA_DTLS_V) uata full outer join TRACKER_DTLS_V t on (uata.UATA_REPORT_ID=t.TRACKER_REPORT_ID);
+
+select t.*,uata.*,uat1.* from (select UATA_REPORT_ID,UATA_REPORT_NAME,SUBSTR(UATA_REPORT_NAME,length(UATA_REPORT_NAME)-4) UATA_VERSION 
+from UATA_DTLS_V) UATA full outer join TRACKER_DTLS_V T on (UATA.UATA_REPORT_ID=T.TRACKER_REPORT_ID)
+full outer join (select UAT1_REPORT_ID,UAT1_REPORT_NAME,SUBSTR(UAT1_REPORT_NAME,length(UAT1_REPORT_NAME)-4) UAT1_VERSION 
+from UAT1_DTLS_V) uat1 on (UAT1.UAT1_REPORT_ID=T.TRACKER_REPORT_ID);
