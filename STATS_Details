@@ -1,0 +1,22 @@
+SELECT table_name, last_analyzed 
+
+FROM dba_tables
+
+WHERE table_name = 'JRNL_HEAD'
+
+SELECT table_name, partition_name, last_analyzed 
+
+FROM dba_tab_partitions
+
+WHERE table_name = 'JRNL_HEAD' AND last_analyzed IS NULL
+
+ORDER BY 1,2
+
+SELECT table_name, partition_name, subpartition_name, last_analyzed 
+
+FROM dba_tab_subpartitions
+
+WHERE table_name = 'JRNL_HEAD' AND last_analyzed IS NULL
+
+ORDER BY 1,2
+
