@@ -1,0 +1,16 @@
+
+select report_id, DISPLAY_REPORT_NAME from ra_reports_b where REPORT_SHORT_NAME in (select substr(FileReportName,1,10) from ( select B.REPORT_ID,
+case when (  DISPLAY_REPORT_NAME like '% - v%'OR DISPLAY_REPORT_NAME like '%- v%')
+then SUBSTR(DISPLAY_REPORT_NAME,1,length(DISPLAY_REPORT_NAME)-
+length(SUBSTR(DISPLAY_REPORT_NAME,-7))) else DISPLAY_REPORT_NAME end REPORTNAMEWITHOUTVER ,
+a.ids ,a.report_id FileReportId,trim(a.report_name) FileReportName
+from RA_REPORTS_B B ,DIF_DMG a
+where APP_ID(+)in (1,13) and B.ACTIVE_IND(+)='A' 
+and a.REPORT_ID= B.REPORT_ID (+) order by a.IDS ) 
+where REPORT_ID is null and REPORTNAMEWITHOUTVER is null )
+and  ACTIVE_IND='I'and app_id=1;--and REPORT_ID in ();
+ ;--and REPORT_ID in ();
+
+select b.app_id,b.report_id, b.display_report_name 
+from RA_REPORTS_B B where B.REPORT_ID not in ( select a.REPORT_ID from DIF_DMG a)
+and B.APP_ID=1 and  b.active_ind='A';
