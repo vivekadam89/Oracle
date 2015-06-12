@@ -1,0 +1,22 @@
+SPOOL C:\Users\vk92214\Desktop\Inquiry Framework\Get Query\Queries.SQL
+SET FEEDBACK OFF;
+SET SERVEROUTPUT ON;
+declare
+	cursor c1 is 
+	select a.report_short_name,a.display_report_name,b.query_text from ra_reports_b a, ra_seeded_queries b, ra_report_query_map c
+	where a.report_id=c.report_id
+	and b.query_id=c.query_id
+	and a.app_id=1
+	and a.report_short_name in('FBBOPS0002','FBBOPS0003','FBBSPR0001','FBBSPR0002','FBBSPR0003','FBBSPR0004','FBBSPR0005','FBBSPR0006')
+	order by a.report_id;
+begin
+	for i in c1 loop
+		dbms_output.put_line('--Report: '|| i.report_short_name || 'Report_Name: '||i.display_report_name);
+		dbms_output.put_line('');
+		dbms_output.put_line(i.query_text);
+		dbms_output.put_line('');
+		dbms_output.put_line('');
+	end loop;
+end;
+/
+SET FEEDBACK ON;
