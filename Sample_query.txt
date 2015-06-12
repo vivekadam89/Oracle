@@ -1,0 +1,53 @@
+select * from ra_reports_b where report_id in (1362);
+
+select max(report_id)+1 from ra_reports_b where app_id=1 and report_id <> 1999;
+
+select * from ra_report_inst_info where run_id= 16816 ;
+
+select run_id,report_id,instance_name,submitted_by_soeid,failed_reason,online_error from ra_report_instances 
+where run_id in (16816);
+
+select column_name from VBK_QC where  length(column_name) >30;
+
+select * from vbk_qc;
+select * from vbk_rp;
+select * from VBK_QA;
+
+declare 
+cursor c1 is select * from VBK_QA;
+begin
+for i in c1 loop
+update vbk_rp set param_name_in_query=i.query_column where parameter_name_in_ui=i.alias_name;
+end loop;
+commit;
+end;
+
+---------------------
+
+Alias Query  : 
+
+select query_column || ' AS "'|| alias_name ||'",' from VBK_QA where alias_name in (select column_name from vbk_qc);
+
+---------------------
+
+Mandatory Filter Query : 
+
+select 'AND '|| PARAM_NAME_IN_QUERY ||' = :'|| PARAM_NAME_IN_QUERY  from vbk_rp where mandatory_ind='Y';
+
+Optional Filter Query : 
+
+select '<#if '|| PARAM_NAME_IN_QUERY ||'?? && '||' '|| PARAM_NAME_IN_QUERY ||'?trim != ""> '|| CHR(10) ||' AND '|| PARAM_NAME_IN_QUERY ||'  = :'|| PARAM_NAME_IN_QUERY||' ' || CHR(10) ||'</#if>' from vbk_rp where mandatory_ind='N';
+
+---------------------
+MULTIQUERY
+
+Mandatory Filter Query : 
+
+select ordering_sequence,'AND '|| param_name_in_query || case when input_type_id =9 then ' IN (${' else ' = :'end|| param_name_in_query ||case when input_type_id =9 then '})' else null end "Filter_Query"
+from ra_report_parameters_b where report_id=1426 and mandatory_ind='Y';
+
+
+Optional Filter Query : 
+
+select ordering_sequence,'<#if '|| param_name_in_query ||'?? && '||' '|| param_name_in_query ||'?trim != ""> '|| chr(10) ||' AND '|| param_name_in_query||case when input_type_id =9 then ' IN (${' else ' = :'end || param_name_in_query ||case when input_type_id =9 then '})' else null end||' ' || chr(10) ||'</#if>' "Filter_Query"
+from ra_report_parameters_b where report_id=1426 and mandatory_ind='N';
